@@ -27,11 +27,11 @@ struct USUARIO{
 
 struct elemento { // elemento da matriz
     char elem[255]; 
-} matriz[2000][6]; // aqui é declarada uma matriz de strings (vetores de caracteres) utilizando uma estrutura
+} matriz[900][6]; // aqui é declarada uma matriz de strings (vetores de caracteres) utilizando uma estrutura
                             // checklist 2/6: struct e vetores e matrizes
 int item = -1;       // a variável item armazena a quantidade de veículos cadastrados, é inicializada com -1 porque antes de cadastrar
                             // um veículo novo na matriz essa variável é incrementada, sendo assim o primeiro item ocupa a posição 0 
-                            // se item = 0 há apenas um veículo cadastrado // checklist 3/6: variável
+                            // se item = 0 há apenas um veículo cadastrado checklist 3/6: variável
 
 FILE *arq;
 
@@ -57,10 +57,8 @@ time_t idadeEmSegundos[847]; // usado na função particiona caso ordenaPorIdade s
 
 int login() {
 
-    int num_usuarios = 0, escolha = 0, achou_usuario = 0, i, j;
-    int num_tentativas[num_usuarios];
-    char username[30];
-    char password[20];
+    int num_usuarios = 0, num_tentativas[num_usuarios], escolha = 0, achou_usuario = 0, i, j;
+    char username[30], password[20];
 
     arq = fopen("login.txt","r");
     if (arq == NULL) { // Se não encontrou o arquivo
@@ -82,7 +80,7 @@ int login() {
     }
     while (1) {
         system("cls");
-        printf("\n\n\t\t1. Cadastrar-se\n");
+        printf("\n\n\n\t\t1. Cadastrar-se\n");
         printf("\t\t2. Fazer login\n");
         printf("\t\t3. Sair\n");
         printf("\n\t\tEscolha uma opção: ");
@@ -90,7 +88,9 @@ int login() {
 
         if (escolha == 1) {
             if (num_usuarios == MAX_USUARIOS) {
-                printf("\t\tNúmero máximo de usuários atingido\n");
+                system("cls");
+                printf("\n\n\n\t\tNúmero máximo de usuários atingido");
+                sleep(2);
             }
             else {
                 printf("\n\t\tDigite um nome de usuário de sua preferência: ");
@@ -112,22 +112,24 @@ int login() {
             for (i = 0; i < num_usuarios; i++) { //percorre todas as linhas (todos os usuários)
                 agora = time(NULL);
                 if (strcmp(usuarios[i].username, username) == 0 /*Se o usuário existe*/ && agora - usuarios[i].horario < 0 /*Se está bloqueado*/) {
-                    printf("\n\t\tA conta '%s' está bloqueada por mais %ld segundos\n", usuarios[i].username, (agora - usuarios[i].horario)*-1);
-                        break;
+                    printf("\n\t\tA conta '%s' está bloqueada por mais %ld segundos", usuarios[i].username, (agora - usuarios[i].horario)*-1);
+                    sleep(2);
+                    break;
                 }
                 else {
                     if (strcmp(usuarios[i].username, username) == 0 && strcmp(usuarios[i].password, password) == 0) { //se o usuário e a senha batem
                         system("cls");
-                        printf("\n\n\n\t\tLogin realizado com sucesso!\n");
+                        printf("\n\n\n\t\tLogin realizado com sucesso!");
                         num_tentativas[i] = 0;
                         atualizaLogin(num_usuarios);
-                        sleep(1); //pausa por 1
+                        sleep(1); usleep(400000);//pausa por 1,4 segundos
                         return 1;
                     }
                 }
             }
             if (i == num_usuarios) { // Se percorreu todas as linhas no laço acima e não existe login com o usuário e senha correspondente aos digitados
-                printf("\n\t\tNome de usuário ou senha incorretos!\n");
+                printf("\n\t\tNome de usuário ou senha incorretos!");
+                sleep(1); usleep(400000);//pausa por 1,4 segundos
                 for (j = 0; j < num_usuarios; j++) {
                     if (strcmp(usuarios[j].username, username) == 0) {
                         achou_usuario = 1;
@@ -151,7 +153,7 @@ int login() {
         }
         else {
             system("cls");
-            printf("\n\t\tOpção inválida!\n");
+            printf("\n\n\n\t\tOpção inválida!");
             sleep(1);
         }
     }
@@ -161,16 +163,16 @@ void atualizaLogin(int quantUsuarios) {
     arq = fopen("login.txt", "w"); // gravação
     fprintf(arq,"%d\n", quantUsuarios);
     for (int x = 0; x < quantUsuarios; x++) {
-        fprintf(arq,"%s %s %d\n", usuarios[x].username, usuarios[x].password, usuarios[x].horario);
+        fprintf(arq,"%s %s %d", usuarios[x].username, usuarios[x].password, usuarios[x].horario);
+        if (x != quantUsuarios-1) fprintf(arq,"\n");
     }
     fclose(arq);
 }
 
 void leDoArquivo() { // carrega a tabela com os carros que já foram cadastrados e estão salvos em um arquivo txt
 
-    char bigString[341];
-    char *ponteiro;
-    
+    char bigString[341], *ponteiro;
+
     arq = fopen("Listagem_de_Veículos.txt", "r"); // leitura
     if (arq == NULL) // Se não encontrou o arquivo // checklist 4/6: desvios condicionais
         printf("\t\tAinda não há nenhum veículos registrado/ arquivo não encontrado!\n\n"); // saída de dados
@@ -496,8 +498,6 @@ struct linha {
     
 // Função para trocar duas linhas da matriz de posição
 void troca(int a, int b) {
-    // printf("trocando data[%d] = '%s' por data[%d] = '%s'", a, matriz[a][4].elem, b, matriz[b][4].elem);
-    // getchar();
     for(int j = 0; j < 6; j++) {
         strncpy(linhaAux[j].col, matriz[a][j].elem, sizeof(linhaAux[j].col)); // aux = a
         linhaAux[j].col[sizeof(linhaAux[j].col) - 1] = '\0'; // Certifica-se de que a string de destino seja terminada corretamente
@@ -528,8 +528,6 @@ int particiona( int inicio, int fim) {
     for (int j = inicio; j < fim; j++) {
         if (antiguidade) {
             if (inverso) {
-                // printf("\nCaiu no ordenamento velho-novo opção 10)\n");
-                // getchar();
                 if ( idadeEmSegundos[j] >= PIVO ) { // só troca o sinal
                     i++; // incrementa o índice do menor elemento
                     if (i != j) {
@@ -540,8 +538,6 @@ int particiona( int inicio, int fim) {
             }
             else {
                 if ( idadeEmSegundos[j] <= PIVO ) { // Se o elemento atual for menor ou igual ao pivô
-                // printf("\nCaiu no ordenamento novo-velho opção 9)\n");
-                // getchar();
                     i++; // incrementa o índice do menor elemento
                     if (i != j) {
                         troca(i, j);

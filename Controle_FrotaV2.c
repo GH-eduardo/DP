@@ -8,7 +8,6 @@
 #define MAX_USUARIOS 5
 #define MAX_TENTATIVAS 3
 #define TEMPO_DE_ESPERA 120 // tempo de block caso haja 3 tentativas falhas de login seguidas (em segundos) 
-#define CARAC 
 
 // checklist dos 7 requisitos solicitados pelo professor Alexandre Moreno (algoritmos II) para a segunda entrega DP:
 // struct/estrutura                         X
@@ -42,8 +41,8 @@ void escreveNoArquivo();
 void menu();
 int verificaExistencia(int x, char* s); 
 void inserirVeiculo();
-void menuModificar(int *opcao,int *modificar); // Declaração das funções na ordem em que estão dispostas
-void modificarVeiculo();
+void menuModificar(); // Declaração das funções na ordem em que estão dispostas
+void modificarVeiculo(int o, int l);
 void imprimeTabela();
 void pesquisa();
 void troca(int a, int b);
@@ -62,10 +61,10 @@ int login() {
 
     arq = fopen("login.txt","r");
     if (arq == NULL) { // Se não encontrou o arquivo
-        printf("\t\tArquivo de login não encontrado!\n\n"); // saída de dados
+        printf("\n\n\t\tArquivo de login não encontrado!\n\n"); // saída de dados
         printf("\t\tGerando Arquivo de login em branco...\n\n"); 
         arq = fopen("login.txt","w");
-        sleep(2);
+        sleep(2); // pausa por 2 segundos
     }
     else {
         fscanf(arq, "%d", &num_usuarios);
@@ -90,7 +89,7 @@ int login() {
             if (num_usuarios == MAX_USUARIOS) {
                 system("cls");
                 printf("\n\n\n\t\tNúmero máximo de usuários atingido");
-                sleep(2);
+                sleep(2); // pausa por 2 segundos
             }
             else {
                 printf("\n\t\tDigite um nome de usuário de sua preferência: ");
@@ -122,14 +121,14 @@ int login() {
                         printf("\n\n\n\t\tLogin realizado com sucesso!");
                         num_tentativas[i] = 0;
                         atualizaLogin(num_usuarios);
-                        sleep(1); usleep(400000);//pausa por 1,4 segundos
+                        sleep(2);
                         return 1;
                     }
                 }
             }
             if (i == num_usuarios) { // Se percorreu todas as linhas no laço acima e não existe login com o usuário e senha correspondente aos digitados
                 printf("\n\t\tNome de usuário ou senha incorretos!");
-                sleep(1); usleep(400000);//pausa por 1,4 segundos
+                sleep(2);
                 for (j = 0; j < num_usuarios; j++) {
                     if (strcmp(usuarios[j].username, username) == 0) {
                         achou_usuario = 1;
@@ -175,7 +174,7 @@ void leDoArquivo() { // carrega a tabela com os carros que já foram cadastrados 
 
     arq = fopen("Listagem_de_Veículos.txt", "r"); // leitura
     if (arq == NULL) // Se não encontrou o arquivo // checklist 4/6: desvios condicionais
-        printf("\t\tAinda não há nenhum veículos registrado/ arquivo não encontrado!\n\n"); // saída de dados
+        printf("\n\n\t\tAinda não há nenhum veículos registrado/ arquivo não encontrado!\n\n"); // saída de dados
     else {
 
         fscanf(arq, "%d", &item); // entrada de dados (de um arquivo) // checklist 5/6: comandos de entrada e saída
@@ -196,7 +195,7 @@ void escreveNoArquivo() { // salva a tabela de veículos no arquivo txt
 
     arq = fopen("Listagem_de_Veículos.txt", "w"); // gravação
 	if (arq == NULL)  // Se houve erro na criação do arquivo
-    	printf("\t\tProblemas na criação do arquivo\n");
+    	printf("\n\n\t\tProblemas na criação do arquivo\n");
 	else  {
 
         fprintf(arq, "%d\n", item);
@@ -212,7 +211,7 @@ void escreveNoArquivo() { // salva a tabela de veículos no arquivo txt
 	fclose(arq);
 }
 
-bool antiguidade, inverso, placa; // ordenar por antiguidade?, ordenar de forma decrescente? e pesquisar pela placa? respectivamente
+bool antiguidade, inverso, placa, sucesso; // ordenar por antiguidade?, ordenar de forma decrescente? e pesquisar pela placa? respectivamente
 
 void menu() {
 
@@ -223,7 +222,7 @@ void menu() {
         system("cls");
         printf("\n\n\t\tBEM-VINDO AO MENU! POR FAVOR ESCOLHA UMA OPÇÃO:\n\n");
         printf("\t\t1) para inserir um novo veículo\n");
-        printf("\t\t2) para modificar alguma informação de algum veículo\n");
+        printf("\t\t2) para alterar alguma informação de algum veículo\n");
         printf("\t\t3) para imprimir a tabela de veículos cadastrados\n");
         printf("\t\t4) para salvar dados\n");
         printf("\t\t5) para pesquisar pelo nome do veículo\n");
@@ -241,7 +240,7 @@ void menu() {
 
             case 1: inserirVeiculo(); break;
 
-            case 2: modificarVeiculo(); break;
+            case 2: menuModificar(); break;
 
             case 3: imprimeTabela(); break;
 
@@ -259,7 +258,7 @@ void menu() {
 
             case 10: antiguidade = true; inverso = true; ordenaPorIdade(); quickSort(0, item-1); imprimeTabela(); break;
 
-            case 11: system("cls"); login(); break;
+            case 11: sucesso = login(); if(!sucesso) /*se não logou fecha o programa*/return; break;
 
             case 12: printf("\n\t\tSaindo...\n"); break;
 
@@ -283,8 +282,8 @@ void inserirVeiculo () { // cadastra um novo veículo
     int ondeTem = -1, x;
 
     printf("\n\t\tVeículo: ");
-    scanf("%[^\n]53s", matriz[item][0].elem); fflush(stdin);
-    matriz[item][0].elem[sizeof(matriz[item][0].elem) - 1] = '\0'; // Certifica-se de que a string de destino seja terminada corretamente
+    scanf("%[^\n]s", matriz[item][0].elem); fflush(stdin);
+    matriz[item][0].elem[strlen(matriz[item][0].elem)] = '\0'; // Certifica-se de que a string de destino seja terminada corretamente
     
     x = 1;
     do {
@@ -292,12 +291,12 @@ void inserirVeiculo () { // cadastra um novo veículo
         scanf("%7s", entrada); fflush(stdin);
         ondeTem = verificaExistencia(x,entrada);  
         if (ondeTem != -1) {
-            printf("\n\tO veículo da linha [%d] já está cadastrado com esta placa! por favor confira e digite novamente\n",ondeTem);
+            printf("\n\t\tO veículo da linha [%d] já está cadastrado com esta placa! por favor confira e digite novamente\n",ondeTem);
             getchar();
         }
         else {
             strcpy(matriz[item][1].elem, entrada);
-            matriz[item][1].elem[sizeof(matriz[item][1].elem) - 1] = '\0'; 
+            matriz[item][1].elem[strlen(matriz[item][1].elem)] = '\0'; 
         }
     } while (ondeTem != -1);          // prevenção de erro de digitação/redundância não deixando que
     x = 2;                                        // insira um novo veículo com informações já cadastradas 
@@ -306,12 +305,12 @@ void inserirVeiculo () { // cadastra um novo veículo
         scanf("%17s", entrada); fflush(stdin);
         ondeTem = verificaExistencia(x,entrada);  
         if (ondeTem != -1) {
-            printf("\n\tO veículo da linha [%d] já está cadastrado com este chassi! por favor confira e digite novamente\n",ondeTem);
+            printf("\n\t\tO veículo da linha [%d] já está cadastrado com este chassi! por favor confira e digite novamente\n",ondeTem);
             getchar();
         }
         else {   
             strcpy(matriz[item][2].elem, entrada);
-            matriz[item][2].elem[sizeof(matriz[item][2].elem) - 1] = '\0'; 
+            matriz[item][2].elem[strlen(matriz[item][2].elem)] = '\0'; 
         }
     } while (ondeTem != -1);
     x = 3;
@@ -320,69 +319,104 @@ void inserirVeiculo () { // cadastra um novo veículo
         scanf("%9s", entrada); fflush(stdin);
         ondeTem = verificaExistencia(x,entrada);  
         if (ondeTem != -1) {
-            printf("\n\tO veículo da linha [%d] já está cadastrado com este renavan! por favor confira e digite novamente\n",ondeTem);
+            printf("\n\t\tO veículo da linha [%d] já está cadastrado com este renavan! por favor confira e digite novamente\n",ondeTem);
             getchar();
         }
         else {
             strcpy(matriz[item][3].elem, entrada);
-            matriz[item][3].elem[sizeof(matriz[item][3].elem) - 1] = '\0'; 
+            matriz[item][3].elem[strlen(matriz[item][3].elem)] = '\0'; 
         }
     } while (ondeTem != -1);
     printf("\n\t\tAquisição: ");
     scanf("%10s", matriz[item][4].elem); fflush(stdin);
-    matriz[item][4].elem[sizeof(matriz[item][4].elem) - 1] = '\0'; 
+    matriz[item][4].elem[strlen(matriz[item][4].elem)] = '\0'; 
 
     printf("\n\t\tSetor: ");
     scanf("%[^\n]49s", matriz[item][5].elem); fflush(stdin);
-    matriz[item][5].elem[sizeof(matriz[item][5].elem) - 1] = '\0'; 
+    matriz[item][5].elem[strlen(matriz[item][5].elem)] = '\0'; 
 
     item++; 
 }
 
-void menuModificar(int *opcao,int *modificar) { // altera algum campo (dos "alteráveis") de um veículo
-
-    do {
-        system("cls");
-        printf("\n\n\t\tQual o número do veículo você deseja modificar? digite a linha correspondente da tabela: ");
-        scanf("%d",modificar); fflush(stdin);
-        if(*modificar < 0 || *modificar > item) {
-            printf("\n\t\tOpção inválida!\n");
-            getchar();
-        }
-    } while(*modificar < 0 || *modificar > item); // repete enquanto o usuário não digitar uma opção válida (prevenção de erros)
-
-    do {
-        system("cls");
-        printf("\n\n\t\tQual campo você deseja modificar? Digite a opção correspondente: \n");
-        printf("\n\t\t1) Placa\n");
-        printf("\t\t2) Setor\n");
-        printf("\n\t\t--> ");
-        scanf("%d",opcao); fflush(stdin);
-        if(*opcao < 1 || *opcao > 2) {
-            printf("\n\t\tOpção inválida!\n");
-            getchar();
-        }
-    } while(*opcao < 1 || *opcao > 2); // repete o menu enquanto o usuário não digitar uma opção válida
-}
-
-void modificarVeiculo() {
+void menuModificar() { // altera algum campo (dos "alteráveis") de um veículo
 
     int opcao, modificar; 
 
-    menuModificar(&opcao,&modificar);
+    do {
+        system("cls");
+        printf("\n\n\n\t\tQual campo você deseja alterar? Digite a opção correspondente: \n\n");
+        printf("\t\t1) Nome\n");
+        printf("\t\t2) Placa\n");
+        printf("\t\t3) Setor\n");
+        printf("\t\t4) Voltar ao Menu\n");
+        printf("\n\t\t--> ");
+        scanf("%d", &opcao); fflush(stdin);
+        if(opcao < 1 || opcao > 4) {
+            printf("\n\t\tOpção inválida!\n");
+            getchar();
+        }
+    } while(opcao < 1 || opcao > 4); // repete o menu enquanto o usuário não digitar uma opção válida
 
-    printf("\n\t\tDigite a nova informação para substituir a anterior: ");
+    if (opcao == 4) return;
 
-    switch(opcao) {
-        case 1: scanf("%7s", matriz[modificar][1].elem); fflush(stdin); // modificar a placa
-            matriz[modificar][1].elem[sizeof(matriz[modificar][1].elem) - 1] = '\0'; break; 
-        case 2: scanf("%49[^\n]s", matriz[modificar][5].elem); fflush(stdin); // modificar o setor
-            matriz[modificar][5].elem[sizeof(matriz[modificar][5].elem) - 1] = '\0'; break; 
+    do {
+        printf("\n\t\tQual é a linha do veículo que você deseja alterar: ");
+        scanf("%d", &modificar); fflush(stdin);
+        if(modificar < 0 || modificar > item) {
+            printf("\n\t\tOpção inválida!\n");
+            getchar();
+        }
+    } while(modificar < 0 || modificar > item); // repete enquanto o usuário não digitar uma opção válida (prevenção de erros)
+
+    modificarVeiculo(opcao, modificar);
+}
+
+void modificarVeiculo(int o, int l) { // o = opção  l = linha
+
+    char campo[10];
+    int c, cancelar = 1, tam; // c de coluna
+
+    printf("\n     |  %-55s|  %-9s|  %-19s|  %-11s|  %-12s|  %-51s\n", "NOME/DESCRIÇÃO", "PLACA", "CHASSI", "RENAVAM", "AQUISIÇÃO", "SETOR");
+    printf("     |  ");
+    tam = strlen(matriz[l][0].elem);
+    for (int z = 0; z < tam && z < 55; z++) { // imprime o conteúdo de algum elemento da matriz limitando a 55 caracteres
+        printf("%c", matriz[l][0].elem[z]);
     }
+    if (tam < 55) {
+        for (int s = 1; s <= (55 - tam); s++) { // se o campo em questão não tiver 55 caracteres completa 
+            printf(" ");                                       // com espaços a fim de manter uma boa formatação
+        }
+    }
+    printf("|  %-9s|  %-19s|  %-11s|  %-12s|  %-51s\n", matriz[l][1].elem, matriz[l][2].elem, matriz[l][3].elem, matriz[l][4].elem, matriz[l][5].elem);
+
+    if (o == 1) {
+        c = 0;
+        strcpy(campo, "NOME/DESCRIÇÃO");
+    }
+    else if (o == 2) {
+        c = 1;
+        strcpy(campo, "PLACA");
+    }
+    else {
+        c = 5;
+        strcpy(campo, "SETOR");
+    }
+
+    printf("\n\t\tTem certeza que deseja substituir %s?\n\n\t\t\"%s\"\n\n\t\tDigite 1 em caso afirmativo ou 0 para cancelar: ", campo, matriz[l][c].elem);
+    scanf("%d", &cancelar); fflush(stdin);
+    if (cancelar == 0) return;
+
+    printf("\n\t\tDigite o(a) novo(a) %s: ", campo);
+    scanf("%[^\n]s", matriz[l][c].elem); fflush(stdin); // modifica o campo escolhido
+    tam = strlen(matriz[l][c].elem);
+    matriz[l][c].elem[tam] = '\0';
+
+    menuModificar();
 }
 
 void imprimeTabela() {
-    int tam, carac;
+
+    int tam, carac, verTudo;
 
     if (item < 0) {
         printf("\n\t\tAinda não há nenhum veículo registrado!\n");
@@ -391,7 +425,7 @@ void imprimeTabela() {
     }
 
     system("cls");
-    printf("\n     |  %-55s|  %-9s|  %-19s|  %-11s|  %-12s|  %-51s\n", "VEÍCULO", "PLACA", "CHASSI", "RENAVAN", "AQUISIÇÃO", "SETOR");
+    printf("\n     |  %-55s|  %-9s|  %-19s|  %-11s|  %-12s|  %-51s\n", "NOME/DESCRIÇÃO", "PLACA", "CHASSI", "RENAVAM", "AQUISIÇÃO", "SETOR");
     printf("     |  %-55s|  %-9s|  %-19s|  %-11s|  %-12s|  %-51s\n", "", "", "", "", "", "");
 
     for (int i = 0; i < item; i++) {
@@ -406,10 +440,10 @@ void imprimeTabela() {
                 case 5: carac = 55; break;
             }
             printf("|  ");
-            for (int z = 0; z < carac; z++) { // imprime o conteúdo de algum elemento da matriz limitando a 'carac' caracteres
+            tam = strlen(matriz[i][j].elem);
+            for (int z = 0; z < tam && z < carac; z++) { // imprime o conteúdo de algum elemento da matriz limitando a 'carac' caracteres
                 printf("%c", matriz[i][j].elem[z]);
             }
-            tam = strlen(matriz[i][j].elem);
             if (tam < carac && j != 5) {
                 for (int s = 1; s <= (carac - tam); s++) { // se o campo em questão não tiver 'carac' caracteres completa 
                     printf(" ");                                       // com espaços a fim de manter uma boa formatação
@@ -418,12 +452,17 @@ void imprimeTabela() {
         }
         printf("\n");
     }
-    getchar();
+    do {
+        printf("\n\t\tDeseja ver o nome completo de algum veículo? se sim digite a linha do veículo, se não digite -1: ");
+        scanf("%d", &verTudo);
+        if (verTudo != -1) printf("\n\t\t%s\n", matriz[verTudo][0].elem);
+    } while (verTudo != -1);
 }
 
 void pesquisa() { // quase igual a função imprimeTabela
-    int tam, carac, cont = 1;
-    char nome[40] = {"zzzzzzzzzzzzzzzz"}, nome2[40] = {"zzzzzzzzzzzzzzzzzzzzz"}, nome3[40] = {"zzzzzzzzzzzzzzzzz"}, variante;
+
+    int carac, cont = 0, tam, verTudo;
+    char nome[40] = {"zzzzzzzzzzzzzzz"}, nome2[40] = {"zzzzzzzzzzzzzzz"}, nome3[40] = {"zzzzzzzzzzzzzzz"}, variante;
 
     if (item < 0) {
         printf("\n\t\tAinda não há nenhum veículo registrado!\n");
@@ -451,20 +490,19 @@ void pesquisa() { // quase igual a função imprimeTabela
             scanf("%c", &variante); fflush(stdin);
 
             if (variante == 's' || variante == 'S') {
-                printf("\n\t\tDigite a variante:");
+                printf("\n\t\tDigite a variante: ");
                 scanf("%40[^\n]s", nome3); fflush(stdin);
             }
         }
     }
-
     system("cls");
-    printf("\n     |  %-55s|  %-9s|  %-19s|  %-11s|  %-12s|  %-51s\n", "VEÍCULO", "PLACA", "CHASSI", "RENAVAN", "AQUISIÇÃO", "SETOR");
+    printf("\n     |  %-55s|  %-9s|  %-19s|  %-11s|  %-12s|  %-51s\n", "NOME/DESCRIÇÃO", "PLACA", "CHASSI", "RENAVAM", "AQUISIÇÃO", "SETOR");
     printf("     |  %-55s|  %-9s|  %-19s|  %-11s|  %-12s|  %-51s\n", "", "", "", "", "", "");
 
     for (int i = 0; i < item; i++) {
         if ( strstr(matriz[i][0].elem, nome) || strstr(matriz[i][0].elem, nome2) || strstr(matriz[i][0].elem, nome3) || strstr(matriz[i][1].elem, nome) ) { 
             // somente se achar o nome/placa pesquisado(a) imprime a linha da matriz
-            printf("%4d ", cont);  // imprime o número da linha
+            printf("%4d ", i);  // imprime o número da linha
             for (int j = 0; j < 6; j++) {
                 switch (j) {
                     case 0: carac = 55; break;
@@ -475,41 +513,45 @@ void pesquisa() { // quase igual a função imprimeTabela
                     case 5: carac = 55; break;
                 }
                 printf("|  ");
-                for (int z = 0; z < carac; z++) { // imprime o conteúdo de algum elemento da matriz limitando a 'carac' caracteres
+                tam = strlen(matriz[i][j].elem);
+                for (int z = 0; z < tam && z < carac; z++) { // imprime o conteúdo de algum elemento da matriz limitando a 'carac' caracteres
                     printf("%c", matriz[i][j].elem[z]);
                 }
-                tam = strlen(matriz[i][j].elem);
-                if (tam < carac) {
+                if (tam < carac && j != 5) {
                     for (int s = 1; s <= (carac - tam); s++) { // se o campo em questão não tiver 'carac' caracteres completa 
                         printf(" ");                                       // com espaços a fim de manter uma boa formatação
                     }
                 }
             }
-            cont++;
-            printf("\n");
+            cont++; printf("\n");
         }
     }
-    getchar();
+    printf("\n\t\tForam encontrados %d veículos de acordo com o que foi digitado!\n", cont);
+    do {
+        printf("\n\t\tDeseja ver o nome completo de algum veículo? se sim digite a linha do veículo, se não digite -1: ");
+        scanf("%d", &verTudo);
+        if (verTudo != -1) printf("\n\t\t%s\n", matriz[verTudo][0].elem);
+    } while (verTudo != -1);
 }
 
 struct linha {
     char col[255];
 } linhaAux[6]; // essa linha auxiliar é usada para fazer a troca de duas linhas da matriz
     
-// Função para trocar duas linhas da matriz de posição
-void troca(int a, int b) {
+void troca(int a, int b) {// Função para trocar duas linhas da matriz de posição 
     for(int j = 0; j < 6; j++) {
         strncpy(linhaAux[j].col, matriz[a][j].elem, sizeof(linhaAux[j].col)); // aux = a
-        linhaAux[j].col[sizeof(linhaAux[j].col) - 1] = '\0'; // Certifica-se de que a string de destino seja terminada corretamente
+        linhaAux[j].col[strlen(linhaAux[j].col)] = '\0'; // Certifica-se de que a string de destino seja terminada corretamente
         strncpy(matriz[a][j].elem, matriz[b][j].elem, sizeof(matriz[a][j].elem)); // a = b
-        matriz[a][j].elem[sizeof(matriz[a][j].elem) - 1] = '\0'; // Certifica-se de que a string de destino seja terminada corretamente
+        matriz[a][j].elem[strlen(matriz[a][j].elem)] = '\0'; // Certifica-se de que a string de destino seja terminada corretamente
         strncpy(matriz[b][j].elem, linhaAux[j].col, sizeof(matriz[b][j].elem)); // b = aux
-        matriz[b][j].elem[sizeof(matriz[b][j].elem) - 1] = '\0'; // Certifica-se de que a string de destino seja terminada corretamente
+        matriz[b][j].elem[strlen(matriz[b][j].elem)] = '\0'; // Certifica-se de que a string de destino seja terminada corretamente
     }
 }
 
 // Função para trocar duas linhas do vetor paralelo
 void troca2(int a, int b) {
+    
     time_t aux;
 
     aux = idadeEmSegundos[a];
@@ -517,8 +559,8 @@ void troca2(int a, int b) {
     idadeEmSegundos[b] = aux;
 }
 
-// Função para encontrar o pivô e particionar o vetor
-int particiona( int inicio, int fim) {
+int particiona( int inicio, int fim) { // Função para encontrar o pivô e particionar o vetor
+
     char pivo[255];
     strcpy(pivo, matriz[fim][0].elem); // escolhendo o último elemento como pivô
     time_t PIVO;
@@ -566,13 +608,14 @@ int particiona( int inicio, int fim) {
         }
     }
     troca(i+1, fim);
+
     if (antiguidade) {
         troca2(i+1, fim); }
     return (i + 1);
 }
 
-// Função principal que implementa o Quicksort
-void quickSort(int inicio, int fim) {
+void quickSort(int inicio, int fim) { // Função principal que implementa o Quicksort
+
     if (inicio < fim) {
         // Encontra o pivô e particiona o vetor
         int indicePivo = particiona(inicio, fim);
@@ -595,7 +638,7 @@ void ordenaPorIdade() {
     for(int i = 0; i < item; i++) {
     
         strncpy(strAux, matriz[i][4].elem, sizeof(strAux)); // armazena o valor da original pois a função strtok vai bagunçar com ela
-        strAux[sizeof(strAux) - 1] = '\0'; // Certifica-se de que a string de destino seja terminada corretamente
+        strAux[strlen(strAux)] = '\0'; // Certifica-se de que a string de destino seja terminada corretamente
 
         ponteiro = strtok(matriz[i][4].elem, "/"); // a função strtok permite dividir uma string maior em "tokens" que são partes menores (substrings)
         strcpy(cDia,ponteiro);
@@ -604,7 +647,7 @@ void ordenaPorIdade() {
         ponteiro = strtok(NULL, ";");
         strcpy(cAno,ponteiro);
         strncpy(matriz[i][4].elem, strAux, sizeof(matriz[i][4].elem)); // devolve o valor original
-        matriz[i][4].elem[sizeof(matriz[i][4].elem) - 1] = '\0'; // Certifica-se de que a string de destino seja terminada corretamente
+        matriz[i][4].elem[strlen(matriz[i][4].elem)] = '\0'; // Certifica-se de que a string de destino seja terminada corretamente
 
         dia = atoi(cDia); 
         mes = atoi(cMes); // transforma as strings para inteiros
@@ -624,7 +667,6 @@ int main() {
     
     setlocale(LC_ALL, "Portuguese");
     
-    bool sucesso;
     sucesso = login();
     if(!sucesso) { // se não logou fecha o programa
         return 0;

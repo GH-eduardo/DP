@@ -8,15 +8,7 @@
 #define MAX_USUARIOS 5
 #define MAX_TENTATIVAS 3
 #define TEMPO_DE_ESPERA 120 // tempo de block caso haja 3 tentativas falhas de login seguidas (em segundos) 
-
-// checklist dos 7 requisitos solicitados pelo professor Alexandre Moreno (algoritmos II) para a segunda entrega DP:
-// struct/estrutura                         X
-// variáveis                                    X
-// comandos de entrada e saída   X
-// laços de repetição                     X
-// desvios condicionais (if)            X
-// vetores e matrizes                     X
-// sistema de login que bloqueia após 3 tentativas falhas X
+#define LINHAS_DA_MATRIZ 2190
 
 struct USUARIO{
     char username[30];
@@ -26,11 +18,11 @@ struct USUARIO{
 
 struct elemento { // elemento da matriz
     char elem[255]; 
-} matriz[900][6]; // aqui é declarada uma matriz de strings (vetores de caracteres) utilizando uma estrutura
-                            // checklist 2/6: struct e vetores e matrizes
+} matriz[LINHAS_DA_MATRIZ][6]; // aqui é declarada uma matriz de strings (vetores de caracteres) utilizando uma estrutura
+                            
 int item = -1;       // a variável item armazena a quantidade de veículos cadastrados, é inicializada com -1 porque antes de cadastrar
                             // um veículo novo na matriz essa variável é incrementada, sendo assim o primeiro item ocupa a posição 0 
-                            // se item = 0 há apenas um veículo cadastrado checklist 3/6: variável
+                            // se item = 0 há apenas um veículo cadastrado
 
 FILE *arq;
 
@@ -52,7 +44,7 @@ void quickSort();
 void ordenaPorIdade();
 
 time_t agora; //usada na função login (escolha2) e também na função ordenaPorIdade
-time_t idadeEmSegundos[847]; // usado na função particiona caso ordenaPorIdade seja chamada
+time_t idadeEmSegundos[LINHAS_DA_MATRIZ]; // usado na função particiona caso ordenaPorIdade seja chamada
 
 int login() {
 
@@ -61,7 +53,7 @@ int login() {
 
     arq = fopen("login.txt","r");
     if (arq == NULL) { // Se não encontrou o arquivo
-        printf("\n\n\t\tArquivo de login não encontrado!\n\n"); // saída de dados
+        printf("\n\n\t\tArquivo de login não encontrado!\n\n"); 
         printf("\t\tGerando Arquivo de login em branco...\n\n"); 
         arq = fopen("login.txt","w");
         sleep(2); // pausa por 2 segundos
@@ -79,7 +71,7 @@ int login() {
     }
     while (1) {
         system("cls");
-        printf("\n\n\n\t\t1. Cadastrar-se\n");
+        printf("\n\n\n\t\t1. Fazer cadastro\n");
         printf("\t\t2. Fazer login\n");
         printf("\t\t3. Sair\n");
         printf("\n\t\tEscolha uma opção: ");
@@ -159,6 +151,7 @@ int login() {
 }
 
 void atualizaLogin(int quantUsuarios) {
+
     arq = fopen("login.txt", "w"); // gravação
     fprintf(arq,"%d\n", quantUsuarios);
     for (int x = 0; x < quantUsuarios; x++) {
@@ -173,13 +166,12 @@ void leDoArquivo() { // carrega a tabela com os carros que já foram cadastrados 
     char bigString[341], *ponteiro;
 
     arq = fopen("Listagem_de_Veículos.txt", "r"); // leitura
-    if (arq == NULL) // Se não encontrou o arquivo // checklist 4/6: desvios condicionais
+
+    if (arq == NULL) // Se não encontrou o arquivo
         printf("\n\n\t\tAinda não há nenhum veículos registrado/ arquivo não encontrado!\n\n"); // saída de dados
     else {
-
-        fscanf(arq, "%d", &item); // entrada de dados (de um arquivo) // checklist 5/6: comandos de entrada e saída
-
-        for(int x = 0; x < item; x++) { // percorre o arquivo gravando as informações obtidas na matriz // checklist 6/6: laços de repetição
+        fscanf(arq, "%d", &item); 
+        for(int x = 0; x < item; x++) { // percorre o arquivo gravando as informações obtidas na matriz 
             fscanf(arq,"\n%[^\n]s",bigString);
             ponteiro = strtok(bigString, ";"); // a função strtok permite dividir uma string maior em "tokens" que são partes menores (substrings)
             for(int y = 0; y < 6; y++) {           // como no arquivo txt os campos estão separados por ';' esse é o segundo argumento passado
@@ -194,21 +186,21 @@ void leDoArquivo() { // carrega a tabela com os carros que já foram cadastrados 
 void escreveNoArquivo() { // salva a tabela de veículos no arquivo txt
 
     arq = fopen("Listagem_de_Veículos.txt", "w"); // gravação
+
 	if (arq == NULL)  // Se houve erro na criação do arquivo
     	printf("\n\n\t\tProblemas na criação do arquivo\n");
 	else  {
-
         fprintf(arq, "%d\n", item);
+
         for(int x = 0; x < item; x++) {
             for(int y = 0; y < 6; y++) {
-
                 fprintf(arq, "%s", matriz[x][y].elem);
                 fprintf(arq,";");
             }
             if (x != item-1) fprintf(arq,"\n");
         }
     }
-	fclose(arq);
+	fprintf(arq,"\n\nPREFEITURA DO MUNICIPIO DE MARINGA\nListagem de Veículos Gerado em: 02/06/2023 13:40 com 2190 registros."); fclose(arq);
 }
 
 bool antiguidade, inverso, placa, sucesso; // ordenar por antiguidade?, ordenar de forma decrescente? e pesquisar pela placa? respectivamente
@@ -268,6 +260,7 @@ void menu() {
 }
 
 int verificaExistencia(int x, char* s) {
+
     for (int a = 0; a < item; a++) {
         if (strcmp(matriz[a][x].elem, s) == 0) {
             return a;
@@ -425,11 +418,11 @@ void imprimeTabela() {
     }
 
     system("cls");
-    printf("\n     |  %-55s|  %-9s|  %-19s|  %-11s|  %-12s|  %-51s\n", "NOME/DESCRIÇÃO", "PLACA", "CHASSI", "RENAVAM", "AQUISIÇÃO", "SETOR");
-    printf("     |  %-55s|  %-9s|  %-19s|  %-11s|  %-12s|  %-51s\n", "", "", "", "", "", "");
+    printf("\n       |  %-55s|  %-9s|  %-19s|  %-11s|  %-12s|  %-51s\n", "NOME/DESCRIÇÃO", "PLACA", "CHASSI", "RENAVAM", "AQUISIÇÃO", "SETOR");
+    printf("       |  %-55s|  %-9s|  %-19s|  %-11s|  %-12s|  %-51s\n", "", "", "", "", "", "");
 
     for (int i = 0; i < item; i++) {
-        printf("%4d ", i);  // imprime o número da linha
+        printf("%6d ", i);  // imprime o número da linha
         for (int j = 0; j < 6; j++) {
             switch (j) {
                 case 0: carac = 55; break;
@@ -477,32 +470,32 @@ void pesquisa() { // quase igual a função imprimeTabela
         printf("\n\t\tDigite o nome do veículo que deseja buscar (em caps lock e sem acentuação): ");
         scanf("%40[^\n]s", nome); fflush(stdin);
 
-        printf("\n\t\tExiste alguma variação do nome (ex: sem acento/letra minúscula), digite S/N: ");
+        printf("\n\t\tDeseja buscar por outro nome/termo? digite S/N: ");
         scanf("%c", &variante); fflush(stdin);
 
         if (variante == 's' || variante == 'S') {
-            printf("\n\t\tDigite a variante: ");
+            printf("\n\t\tDigite a o outro nome/termo: ");
             scanf("%40[^\n]s", nome2); fflush(stdin);
 
             variante = 'n';
 
-            printf("\n\t\tDeseja adicionar mais uma variante? S/N: ");
+            printf("\n\t\tDeseja adicionar mais um nome a se buscar? S/N: ");
             scanf("%c", &variante); fflush(stdin);
 
             if (variante == 's' || variante == 'S') {
-                printf("\n\t\tDigite a variante: ");
+                printf("\n\t\tDigite o outro nome/termo: ");
                 scanf("%40[^\n]s", nome3); fflush(stdin);
             }
         }
     }
     system("cls");
-    printf("\n     |  %-55s|  %-9s|  %-19s|  %-11s|  %-12s|  %-51s\n", "NOME/DESCRIÇÃO", "PLACA", "CHASSI", "RENAVAM", "AQUISIÇÃO", "SETOR");
-    printf("     |  %-55s|  %-9s|  %-19s|  %-11s|  %-12s|  %-51s\n", "", "", "", "", "", "");
+    printf("\n       |  %-55s|  %-9s|  %-19s|  %-11s|  %-12s|  %-51s\n", "NOME/DESCRIÇÃO", "PLACA", "CHASSI", "RENAVAM", "AQUISIÇÃO", "SETOR");
+    printf("       |  %-55s|  %-9s|  %-19s|  %-11s|  %-12s|  %-51s\n", "", "", "", "", "", "");
 
     for (int i = 0; i < item; i++) {
         if ( strstr(matriz[i][0].elem, nome) || strstr(matriz[i][0].elem, nome2) || strstr(matriz[i][0].elem, nome3) || strstr(matriz[i][1].elem, nome) ) { 
             // somente se achar o nome/placa pesquisado(a) imprime a linha da matriz
-            printf("%4d ", i);  // imprime o número da linha
+            printf("%6d ", i);  // imprime o número da linha
             for (int j = 0; j < 6; j++) {
                 switch (j) {
                     case 0: carac = 55; break;
@@ -539,6 +532,7 @@ struct linha {
 } linhaAux[6]; // essa linha auxiliar é usada para fazer a troca de duas linhas da matriz
     
 void troca(int a, int b) {// Função para trocar duas linhas da matriz de posição 
+
     for(int j = 0; j < 6; j++) {
         strncpy(linhaAux[j].col, matriz[a][j].elem, sizeof(linhaAux[j].col)); // aux = a
         linhaAux[j].col[strlen(linhaAux[j].col)] = '\0'; // Certifica-se de que a string de destino seja terminada corretamente
@@ -549,8 +543,7 @@ void troca(int a, int b) {// Função para trocar duas linhas da matriz de posição
     }
 }
 
-// Função para trocar duas linhas do vetor paralelo
-void troca2(int a, int b) {
+void troca2(int a, int b) { // Função para trocar duas linhas do vetor paralelo
     
     time_t aux;
 
@@ -563,8 +556,10 @@ int particiona( int inicio, int fim) { // Função para encontrar o pivô e partici
 
     char pivo[255];
     strcpy(pivo, matriz[fim][0].elem); // escolhendo o último elemento como pivô
+
     time_t PIVO;
     PIVO = idadeEmSegundos[fim];
+
     int i = (inicio - 1); // índice do menor elemento
 
     for (int j = inicio; j < fim; j++) {
@@ -617,11 +612,8 @@ int particiona( int inicio, int fim) { // Função para encontrar o pivô e partici
 void quickSort(int inicio, int fim) { // Função principal que implementa o Quicksort
 
     if (inicio < fim) {
-        // Encontra o pivô e particiona o vetor
-        int indicePivo = particiona(inicio, fim);
-
-        // Classifica recursivamente as duas metades
-        quickSort(inicio, indicePivo - 1);
+        int indicePivo = particiona(inicio, fim); // Encontra o pivô e particiona o vetor
+        quickSort(inicio, indicePivo - 1); // Classifica recursivamente as duas metades
         quickSort(indicePivo + 1, fim);
     }
 }

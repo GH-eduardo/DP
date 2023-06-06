@@ -18,7 +18,7 @@ struct USUARIO{
 
 struct elemento { // elemento da matriz
     char elem[255]; 
-} matriz[LINHAS_DA_MATRIZ][6]; // aqui é declarada uma matriz de strings (vetores de caracteres) utilizando uma estrutura
+} matriz[LINHAS_DA_MATRIZ+10][6]; // aqui é declarada uma matriz de strings (vetores de caracteres) utilizando uma estrutura
                             
 int item = -1;       // a variável item armazena a quantidade de veículos cadastrados, é inicializada com -1 porque antes de cadastrar
                             // um veículo novo na matriz essa variável é incrementada, sendo assim o primeiro item ocupa a posição 0 
@@ -49,12 +49,13 @@ void mensagemOrdenamento();
 void ordenaPorIdade();
 
 time_t agora; //usada na função login (escolha2) e também na função ordenaPorIdade
-time_t idadeEmSegundos[LINHAS_DA_MATRIZ]; // usado na função particiona caso ordenaPorIdade seja chamada
+time_t idadeEmSegundos[LINHAS_DA_MATRIZ+10]; // usado na função particiona caso ordenaPorIdade seja chamada
 
 int login() {
 
     int num_usuarios = 0, num_tentativas[MAX_USUARIOS], escolha = 0, achou_usuario = 0, i, j;
     char username[30], password[20];
+    bool jaExiste;
 
     arq = fopen("login.txt","r");
     if (arq == NULL) { // Se não encontrou o arquivo
@@ -89,8 +90,17 @@ int login() {
                 sleep(2); // pausa por 2 segundos
             }
             else {
-                printf("\n\t\tDigite um nome de usuário de sua preferência: ");
-                scanf("%s", usuarios[num_usuarios].username); fflush(stdin);
+                do {
+                    jaExiste = false;
+                    printf("\n\t\tDigite um nome de usuário de sua preferência: ");
+                    scanf("%s", usuarios[num_usuarios].username); fflush(stdin);
+                    for (int x = 0; x < num_usuarios; x++) {
+                        if (strcmp(usuarios[num_usuarios].username, usuarios[x].username) == 0) {
+                        printf("\n\t\tNome de usuário inválido! (já cadastrado)\n");
+                        jaExiste = true; }
+                    }
+                } while (jaExiste);
+
                 printf("\t\tDigite uma senha de sua preferência: ");
                 scanf("%s", usuarios[num_usuarios].password); fflush(stdin);
                 usuarios[num_usuarios].horario = time(NULL);
@@ -136,7 +146,7 @@ int login() {
                     num_tentativas[j]++;
                     if (num_tentativas[j] >= MAX_TENTATIVAS) {
                         usuarios[j].horario = time(NULL) + TEMPO_BLOCK;
-                        system("cls"); printf("\n\n\n\n\t\tNúmero máximo de tentativas atingido. Conta bloqueada por %d minutos!\n\n\n", TEMPO_BLOCK/60); sleep(2); 
+                        system("cls"); printf("\n\n\n\n\t\tNúmero máximo de tentativas atingido. Conta bloqueada por %d minutos!", TEMPO_BLOCK/60); sleep(2); 
                         atualizaLogin(num_usuarios); 
                         return 0;
                     }

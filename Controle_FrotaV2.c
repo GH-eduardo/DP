@@ -7,7 +7,7 @@
 #include <unistd.h> //biblioteca para usar a função 'sleep'
 #define MAX_USUARIOS 5
 #define MAX_TENTATIVAS 3
-#define TEMPO_DE_ESPERA 120 // tempo de block caso haja 3 tentativas falhas de login seguidas (em segundos) 
+#define TEMPO_BLOCK 120 // tempo de block caso haja 3 tentativas falhas de login seguidas (em segundos) 
 #define LINHAS_DA_MATRIZ 2190
 
 struct USUARIO{
@@ -53,7 +53,7 @@ time_t idadeEmSegundos[LINHAS_DA_MATRIZ]; // usado na função particiona caso ord
 
 int login() {
 
-    int num_usuarios = 0, num_tentativas[num_usuarios], escolha = 0, achou_usuario = 0, i, j;
+    int num_usuarios = 0, num_tentativas[MAX_USUARIOS], escolha = 0, achou_usuario = 0, i, j;
     char username[30], password[20];
 
     arq = fopen("login.txt","r");
@@ -71,7 +71,7 @@ int login() {
     }
     fclose(arq);
 
-    for(int x = 0; x < num_usuarios; x++) {
+    for(int x = 0; x < MAX_USUARIOS; x++) {
         num_tentativas[x] = 0; // inicializa todos os usuários com as tentativas zeradas
     }
     while (1) {
@@ -94,7 +94,7 @@ int login() {
                 printf("\t\tDigite uma senha de sua preferência: ");
                 scanf("%s", usuarios[num_usuarios].password); fflush(stdin);
                 usuarios[num_usuarios].horario = time(NULL);
-                printf("\n\t\tUsuário cadastrado com sucesso!\n");
+                printf("\n\t\tUsuário cadastrado com sucesso!"); sleep(2);
                 num_usuarios++;
             }
         }
@@ -108,7 +108,7 @@ int login() {
             for (i = 0; i < num_usuarios; i++) { //percorre todas as linhas (todos os usuários)
                 agora = time(NULL);
                 if (strcmp(usuarios[i].username, username) == 0 /*Se o usuário existe*/ && agora - usuarios[i].horario < 0 /*Se está bloqueado*/) {
-                    printf("\n\t\tA conta '%s' está bloqueada por mais %ld segundos", usuarios[i].username, (agora - usuarios[i].horario)*-1);
+                    printf("\n\t\tA conta '%s' está bloqueada por mais %ld minuto(s) e %ld segundos", usuarios[i].username, ((agora - usuarios[i].horario)*-1)/60, ((agora - usuarios[i].horario)*-1)%60);
                     sleep(2);
                     break;
                 }
@@ -135,22 +135,22 @@ int login() {
                 if (achou_usuario) { // se o usuário existe a senha é que foi digitada errada
                     num_tentativas[j]++;
                     if (num_tentativas[j] >= MAX_TENTATIVAS) {
-                        usuarios[j].horario = time(NULL) + TEMPO_DE_ESPERA;
-                        system("cls"); printf("\n\n\n\n\t\tNúmero máximo de tentativas atingido. Conta bloqueada por %d minutos.\n", TEMPO_DE_ESPERA/60);
-                        sleep(2);
+                        usuarios[j].horario = time(NULL) + TEMPO_BLOCK;
+                        system("cls"); printf("\n\n\n\n\t\tNúmero máximo de tentativas atingido. Conta bloqueada por %d minutos!\n\n\n", TEMPO_BLOCK/60); sleep(2); 
+                        atualizaLogin(num_usuarios); 
+                        return 0;
                     }
                 }
             }
         }
         else if (escolha == 3) {
-            printf("\n\n\t\tSaindo...\n");
+            printf("\n\n\t\tSaindo...\n\n\n");
             atualizaLogin(num_usuarios);
             return 0;
         }
         else {
             system("cls");
-            printf("\n\n\n\t\tOpção inválida!");
-            sleep(1);
+            printf("\n\n\n\t\tOpção inválida!"); sleep(1);
         }
     }
 }

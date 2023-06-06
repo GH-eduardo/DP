@@ -324,11 +324,11 @@ void inserirVeiculo () { // cadastra um novo veículo
     } while (ondeTem != -1);
     x = 3;
     do {
-        printf("\n\t\tRenavan: ");
+        printf("\n\t\tRenavam: ");
         scanf("%9s", entrada); fflush(stdin);
         ondeTem = verificaExistencia(x,entrada);  
         if (ondeTem != -1) {
-            printf("\n\t\tO veículo da linha [%d] já está cadastrado com este renavan! por favor confira e digite novamente\n",ondeTem);
+            printf("\n\t\tO veículo da linha [%d] já está cadastrado com este renavam! por favor confira e digite novamente\n",ondeTem);
             getchar();
         }
         else {

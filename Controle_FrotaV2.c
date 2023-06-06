@@ -36,11 +36,16 @@ void inserirVeiculo();
 void menuModificar(); // Declaração das funções na ordem em que estão dispostas
 void modificarVeiculo(int o, int l);
 void imprimeTabela();
-void pesquisa();
+void pesquisa(char* termo, char* termo2, char* termo3, int col);
+void bpNome();
+void bpPlaca();
+void bpAquisicao();
+void bpSetor();
 void troca(int a, int b);
 void troca2(int a, int b);
 int particiona( int inicio, int fim);
 void quickSort();
+void mensagemOrdenamento();
 void ordenaPorIdade();
 
 time_t agora; //usada na função login (escolha2) e também na função ordenaPorIdade
@@ -131,7 +136,7 @@ int login() {
                     num_tentativas[j]++;
                     if (num_tentativas[j] >= MAX_TENTATIVAS) {
                         usuarios[j].horario = time(NULL) + TEMPO_DE_ESPERA;
-                        printf("\n\t\tNúmero máximo de tentativas atingido. Conta bloqueada por %d minutos.\n", TEMPO_DE_ESPERA/60);
+                        system("cls"); printf("\n\n\n\n\t\tNúmero máximo de tentativas atingido. Conta bloqueada por %d minutos.\n", TEMPO_DE_ESPERA/60);
                         sleep(2);
                     }
                 }
@@ -203,14 +208,14 @@ void escreveNoArquivo() { // salva a tabela de veículos no arquivo txt
 	fprintf(arq,"\n\nPREFEITURA DO MUNICIPIO DE MARINGA\nListagem de Veículos Gerado em: 02/06/2023 13:40 com 2190 registros."); fclose(arq);
 }
 
-bool antiguidade, inverso, placa, sucesso; // ordenar por antiguidade?, ordenar de forma decrescente? e pesquisar pela placa? respectivamente
+bool antiguidade, inverso, sucesso; // ordenar por antiguidade?, ordenar de forma decrescente? respectivamente
 
 void menu() {
 
     int  opcao;
    
  do {
-        antiguidade = inverso = placa = false; 
+        antiguidade = inverso = false; 
         system("cls");
         printf("\n\n\t\tBEM-VINDO AO MENU! POR FAVOR ESCOLHA UMA OPÇÃO:\n\n");
         printf("\t\t1) para inserir um novo veículo\n");
@@ -219,12 +224,14 @@ void menu() {
         printf("\t\t4) para salvar dados\n");
         printf("\t\t5) para pesquisar pelo nome do veículo\n");
         printf("\t\t6) para pesquisar pela placa do veículo\n");
-        printf("\t\t7) para ordenar a tabela em ordem alfabética (a-z)\n");
-        printf("\t\t8) para ordenar a tabela em ordem alfabética (z-a)\n");
-        printf("\t\t9) para ordenar por ordem de aquisição (novo-antigo)\n");
-        printf("\t\t10) para ordenar por ordem de aquisição (antigo-novo)\n");
-        printf("\t\t11) para sair e logar com outra conta\n");
-        printf("\t\t12) para sair do programa\n");
+        printf("\t\t7) para pesquisar pela data de aquisição do veículo\n");
+        printf("\t\t8) para filtrar a tabela por algum setor específico\n");
+        printf("\t\t9) para ordenar a tabela em ordem alfabética (a-z)\n");
+        printf("\t\t10) para ordenar a tabela em ordem alfabética (z-a)\n");
+        printf("\t\t11) para ordenar por ordem de aquisição (novo-antigo)\n");
+        printf("\t\t12) para ordenar por ordem de aquisição (antigo-novo)\n");
+        printf("\t\t13) para sair e logar com outra conta\n");
+        printf("\t\t14) para sair do programa\n");
         printf("\n\t\t--> ");
         scanf("%d",&opcao); fflush(stdin);
 
@@ -238,25 +245,29 @@ void menu() {
 
             case 4: escreveNoArquivo(); break;
 
-            case 5: pesquisa(); break;
+            case 5: bpNome(); break;
 
-            case 6: placa = true; pesquisa(); break;
+            case 6: bpPlaca(); break;
 
-            case 7: quickSort(0, item-1); imprimeTabela(); break;
+            case 7: bpAquisicao(); break;
 
-            case 8: inverso = true; quickSort(0, item-1); imprimeTabela(); break;
+            case 8: bpSetor(); break;
 
-            case 9: antiguidade = true; ordenaPorIdade(); quickSort(0, item-1); imprimeTabela(); break;
+            case 9: quickSort(0, item-1); mensagemOrdenamento(); break;
 
-            case 10: antiguidade = true; inverso = true; ordenaPorIdade(); quickSort(0, item-1); imprimeTabela(); break;
+            case 10: inverso = true; quickSort(0, item-1); mensagemOrdenamento(); break;
 
-            case 11: sucesso = login(); if(!sucesso) /*se não logou fecha o programa*/return; break;
+            case 11: antiguidade = true; ordenaPorIdade(); quickSort(0, item-1); mensagemOrdenamento(); break;
 
-            case 12: printf("\n\t\tSaindo...\n"); break;
+            case 12: antiguidade = true; inverso = true; ordenaPorIdade(); quickSort(0, item-1); mensagemOrdenamento(); break;
+
+            case 13: sucesso = login(); if(!sucesso) /*se não logou fecha o programa*/return; break;
+
+            case 14: printf("\n\t\tSaindo...\n"); break;
 
             default: printf("\n\t\topção inválida!\n"); getchar();
         }
-    } while (opcao != 12); // repete o menu até que o usuário escolha o número da 'opção sair' 
+    } while (opcao != 14); // repete o menu até que o usuário escolha o número da 'opção sair' 
 }
 
 int verificaExistencia(int x, char* s) {
@@ -272,7 +283,12 @@ int verificaExistencia(int x, char* s) {
 void inserirVeiculo () { // cadastra um novo veículo
 
     char entrada[255];
-    int ondeTem = -1, x;
+    int ondeTem = -1, x, cancelar = 1;
+
+    printf("\n\t\tTem certeza que deseja inserir um novo veículo? digite 1 para continuar e 0 para cancelar: ");
+    scanf("%d",&cancelar); fflush(stdin);
+
+    if (cancelar == 0) return; // se cancelou a inserção do veículo termina a função e volta para o menu
 
     printf("\n\t\tVeículo: ");
     scanf("%[^\n]s", matriz[item][0].elem); fflush(stdin);
@@ -366,8 +382,8 @@ void menuModificar() { // altera algum campo (dos "alteráveis") de um veículo
 
 void modificarVeiculo(int o, int l) { // o = opção  l = linha
 
-    char campo[10];
-    int c, cancelar = 1, tam; // c de coluna
+    char campo[10], entrada[255];
+    int c, cancelar = 1, ondeTem = -1, tam; // c de coluna
 
     printf("\n     |  %-55s|  %-9s|  %-19s|  %-11s|  %-12s|  %-51s\n", "NOME/DESCRIÇÃO", "PLACA", "CHASSI", "RENAVAM", "AQUISIÇÃO", "SETOR");
     printf("     |  ");
@@ -399,10 +415,20 @@ void modificarVeiculo(int o, int l) { // o = opção  l = linha
     scanf("%d", &cancelar); fflush(stdin);
     if (cancelar == 0) return;
 
-    printf("\n\t\tDigite o(a) novo(a) %s: ", campo);
-    scanf("%[^\n]s", matriz[l][c].elem); fflush(stdin); // modifica o campo escolhido
-    tam = strlen(matriz[l][c].elem);
-    matriz[l][c].elem[tam] = '\0';
+    do {
+        printf("\n\t\tDigite o(a) novo(a) %s: ", campo);
+        scanf("%[^\n]s", entrada); fflush(stdin); // modifica o campo escolhido
+        if (c == 1) {ondeTem = verificaExistencia(c,entrada); }
+            if (ondeTem != -1) {
+                printf("\n\t\tO veículo da linha [%d] já está cadastrado com esta informação! por favor confira e digite novamente\n",ondeTem);
+                getchar();
+            }
+            else {
+                strcpy(matriz[l][c].elem, entrada);
+                tam = strlen(matriz[l][c].elem);
+                matriz[l][c].elem[tam] = '\0';
+            }
+    } while (ondeTem != -1);          // prevenção de erro de digitação/redundância não deixando que
 
     menuModificar();
 }
@@ -448,52 +474,20 @@ void imprimeTabela() {
     do {
         printf("\n\t\tDeseja ver o nome completo de algum veículo? se sim digite a linha do veículo, se não digite -1: ");
         scanf("%d", &verTudo);
-        if (verTudo != -1) printf("\n\t\t%s\n", matriz[verTudo][0].elem);
-    } while (verTudo != -1);
+        if (verTudo >= 0 && verTudo < item) printf("\n\t\t%s\n", matriz[verTudo][0].elem);
+    } while (verTudo >= 0 && verTudo < item);
 }
 
-void pesquisa() { // quase igual a função imprimeTabela
+void pesquisa(char* termo, char* termo2, char* termo3, int col) { // quase igual a função imprimeTabela
 
     int carac, cont = 0, tam, verTudo;
-    char nome[40] = {"zzzzzzzzzzzzzzz"}, nome2[40] = {"zzzzzzzzzzzzzzz"}, nome3[40] = {"zzzzzzzzzzzzzzz"}, variante;
 
-    if (item < 0) {
-        printf("\n\t\tAinda não há nenhum veículo registrado!\n");
-        getchar();
-    }
-
-    if (placa) {
-        printf("\n\t\tDigite a placa do veículo que deseja buscar (em caps lock): ");
-        scanf("%40[^\n]s", nome); fflush(stdin);
-    }
-    else {
-        printf("\n\t\tDigite o nome do veículo que deseja buscar (em caps lock e sem acentuação): ");
-        scanf("%40[^\n]s", nome); fflush(stdin);
-
-        printf("\n\t\tDeseja buscar por outro nome/termo? digite S/N: ");
-        scanf("%c", &variante); fflush(stdin);
-
-        if (variante == 's' || variante == 'S') {
-            printf("\n\t\tDigite a o outro nome/termo: ");
-            scanf("%40[^\n]s", nome2); fflush(stdin);
-
-            variante = 'n';
-
-            printf("\n\t\tDeseja adicionar mais um nome a se buscar? S/N: ");
-            scanf("%c", &variante); fflush(stdin);
-
-            if (variante == 's' || variante == 'S') {
-                printf("\n\t\tDigite o outro nome/termo: ");
-                scanf("%40[^\n]s", nome3); fflush(stdin);
-            }
-        }
-    }
     system("cls");
     printf("\n       |  %-55s|  %-9s|  %-19s|  %-11s|  %-12s|  %-51s\n", "NOME/DESCRIÇÃO", "PLACA", "CHASSI", "RENAVAM", "AQUISIÇÃO", "SETOR");
     printf("       |  %-55s|  %-9s|  %-19s|  %-11s|  %-12s|  %-51s\n", "", "", "", "", "", "");
 
     for (int i = 0; i < item; i++) {
-        if ( strstr(matriz[i][0].elem, nome) || strstr(matriz[i][0].elem, nome2) || strstr(matriz[i][0].elem, nome3) || strstr(matriz[i][1].elem, nome) ) { 
+        if ( strstr(matriz[i][col].elem, termo) || strstr(matriz[i][col].elem, termo2) || strstr(matriz[i][col].elem, termo3) ) { 
             // somente se achar o nome/placa pesquisado(a) imprime a linha da matriz
             printf("%6d ", i);  // imprime o número da linha
             for (int j = 0; j < 6; j++) {
@@ -523,8 +517,86 @@ void pesquisa() { // quase igual a função imprimeTabela
     do {
         printf("\n\t\tDeseja ver o nome completo de algum veículo? se sim digite a linha do veículo, se não digite -1: ");
         scanf("%d", &verTudo);
-        if (verTudo != -1) printf("\n\t\t%s\n", matriz[verTudo][0].elem);
-    } while (verTudo != -1);
+        if (verTudo >= 0 && verTudo < item) printf("\n\t\t%s\n", matriz[verTudo][0].elem);
+    } while (verTudo >= 0 && verTudo < item);
+}
+
+void bpNome() {
+
+    char nome[40] = {"zzzzzzzzzzzzzzz"}, nome2[40] = {"zzzzzzzzzzzzzzz"}, nome3[40] = {"zzzzzzzzzzzzzzz"}, variante;
+
+    system("cls");
+    printf("\n\n\n\n\t\tDigite o nome do veículo que deseja buscar (em caps lock e sem acentuação): ");
+    scanf("%40[^\n]s", nome); fflush(stdin);
+
+    printf("\n\t\tDeseja buscar por outro nome/termo? digite S/N: ");
+    scanf("%c", &variante); fflush(stdin);
+
+    if (variante == 's' || variante == 'S') {
+        printf("\n\t\tDigite a o outro nome/termo: ");
+        scanf("%40[^\n]s", nome2); fflush(stdin);
+
+        variante = 'n';
+
+        printf("\n\t\tDeseja adicionar mais um nome a se buscar? S/N: ");
+        scanf("%c", &variante); fflush(stdin);
+
+        if (variante == 's' || variante == 'S') {
+            printf("\n\t\tDigite o outro nome/termo: ");
+            scanf("%40[^\n]s", nome3); fflush(stdin);
+        }
+    }
+    pesquisa(nome, nome2, nome3, 0);
+}
+
+void bpPlaca() {
+
+    char placa[7], placa2[7] = "zzzzzzz", placa3[7] = "zzzzzzz";
+
+    system("cls");
+    printf("\n\n\n\n\t\tDigite a placa do veículo que deseja buscar (em caps lock): ");
+    scanf("%7s", placa); fflush(stdin);
+
+    pesquisa(placa, placa2, placa3, 1);
+}
+
+void bpAquisicao() {
+
+    char data[10], data2[10] = "zzzzzzzzzz", data3[10] = "zzzzzzzzzz", variante;
+
+    system("cls");
+    printf("\n\n\n\n\t\tDigite a data de aquisição do veículo que deseja buscar: ");
+    scanf("%10s", data); fflush(stdin);
+
+    printf("\n\t\tDeseja buscar por outra data? digite S/N: ");
+    scanf("%c", &variante); fflush(stdin);
+
+    if (variante == 's' || variante == 'S') {
+        printf("\n\t\tDigite a outra data: ");
+        scanf("%10s", data2); fflush(stdin);
+
+        variante = 'n';
+
+        printf("\n\t\tDeseja adicionar mais uma data a se buscar? S/N: ");
+        scanf("%c", &variante); fflush(stdin);
+
+        if (variante == 's' || variante == 'S') {
+            printf("\n\t\tDigite a outra data: ");
+            scanf("%10s", data3); fflush(stdin);
+        }
+    }
+    pesquisa(data, data2, data3, 4);
+}
+
+void bpSetor() {
+
+    char setor[40], setor2[40] = "zzzzzzzzzz", setor3[40] = "zzzzzzzzzz";
+
+    system("cls");
+    printf("\n\n\n\n\t\tFiltrar pelo setor: ");
+    scanf("%40[^\n]s", setor); fflush(stdin);
+
+    pesquisa(setor, setor2, setor3, 5);
 }
 
 struct linha {
@@ -616,6 +688,24 @@ void quickSort(int inicio, int fim) { // Função principal que implementa o Quick
         quickSort(inicio, indicePivo - 1); // Classifica recursivamente as duas metades
         quickSort(indicePivo + 1, fim);
     }
+}
+
+void mensagemOrdenamento() {
+
+    system("cls");
+    if (antiguidade && inverso) {
+        printf("\n\n\n\t\tTabela ordenada do veículo mais antigo para o mais novo!\n");
+    }
+    else if (antiguidade && !inverso) {
+        printf("\n\n\n\t\tTabela ordenada do veículo mais novo para o mais antigo!\n");
+    }
+    else if (inverso && !antiguidade) {
+        printf("\n\n\n\t\tTabela em ordem alfabética de Z - A!\n");
+    }
+    else {
+        printf("\n\n\n\t\tTabela em ordem alfabética de A - Z!\n");
+    }
+    sleep(2);
 }
 
 void ordenaPorIdade() {

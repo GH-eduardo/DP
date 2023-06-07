@@ -17,7 +17,7 @@ struct USUARIO{
 } usuarios[MAX_USUARIOS];
 
 struct elemento { // elemento da matriz
-    char elem[255]; 
+    char elem[255];
 } matriz[LINHAS_DA_MATRIZ+10][6]; // aqui é declarada uma matriz de strings (vetores de caracteres) utilizando uma estrutura
                             
 int item = -1;       // a variável item armazena a quantidade de veículos cadastrados, é inicializada com -1 porque antes de cadastrar
@@ -35,6 +35,7 @@ int verificaExistencia(int x, char* s);
 void inserirVeiculo();
 void menuModificar(); // Declaração das funções na ordem em que estão dispostas
 void modificarVeiculo(int o, int l);
+void preencheComEspacos(int a, int b, int num_spaces);
 void imprimeTabela();
 void pesquisa(char* termo, char* termo2, char* termo3, int col);
 void bpNome();
@@ -58,17 +59,9 @@ int login() {
     bool jaExiste;
 
     arq = fopen("login.txt","r");
-    if (arq == NULL) { // Se não encontrou o arquivo
-        printf("\n\n\t\tArquivo de login não encontrado!\n\n"); 
-        printf("\t\tGerando Arquivo de login em branco...\n\n"); 
-        arq = fopen("login.txt","w");
-        sleep(2); // pausa por 2 segundos
-    }
-    else {
-        fscanf(arq, "%d", &num_usuarios);
-        for (int a = 0; a < num_usuarios; a++) {
-            fscanf(arq, "%s %s %d\n", usuarios[a].username, usuarios[a].password, &usuarios[a].horario);
-        }
+    fscanf(arq, "%d", &num_usuarios);
+    for (int a = 0; a < num_usuarios; a++) {
+        fscanf(arq, "%s %s %d\n", usuarios[a].username, usuarios[a].password, &usuarios[a].horario);
     }
     fclose(arq);
 
@@ -182,17 +175,13 @@ void leDoArquivo() { // carrega a tabela com os carros que já foram cadastrados 
 
     arq = fopen("Listagem_de_Veículos.txt", "r"); // leitura
 
-    if (arq == NULL) // Se não encontrou o arquivo
-        printf("\n\n\t\tAinda não há nenhum veículos registrado/ arquivo não encontrado!\n\n"); // saída de dados
-    else {
-        fscanf(arq, "%d", &item); 
-        for(int x = 0; x < item; x++) { // percorre o arquivo gravando as informações obtidas na matriz 
-            fscanf(arq,"\n%[^\n]s",bigString);
-            ponteiro = strtok(bigString, ";"); // a função strtok permite dividir uma string maior em "tokens" que são partes menores (substrings)
-            for(int y = 0; y < 6; y++) {           // como no arquivo txt os campos estão separados por ';' esse é o segundo argumento passado
-                strcpy(matriz[x][y].elem,ponteiro);  //para que a função separe e posteriormente a inserção na matriz seja feita de forma correta 
-                ponteiro = strtok(NULL, ";");
-            }
+    fscanf(arq, "%d", &item); 
+    for(int x = 0; x < item; x++) { // percorre o arquivo gravando as informações obtidas na matriz 
+        fscanf(arq,"\n%[^\n]s",bigString);
+        ponteiro = strtok(bigString, ";"); // a função strtok permite dividir uma string maior em "tokens" que são partes menores (substrings)
+        for(int y = 0; y < 6; y++) {           // como no arquivo txt os campos estão separados por ';' esse é o segundo argumento passado
+            strcpy(matriz[x][y].elem,ponteiro);  //para que a função separe e posteriormente a inserção na matriz seja feita de forma correta 
+            ponteiro = strtok(NULL, ";");
         }
     }
     fclose(arq);
@@ -202,18 +191,14 @@ void escreveNoArquivo() { // salva a tabela de veículos no arquivo txt
 
     arq = fopen("Listagem_de_Veículos.txt", "w"); // gravação
 
-	if (arq == NULL)  // Se houve erro na criação do arquivo
-    	printf("\n\n\t\tProblemas na criação do arquivo\n");
-	else  {
-        fprintf(arq, "%d\n", item);
+    fprintf(arq, "%d\n", item);
 
-        for(int x = 0; x < item; x++) {
-            for(int y = 0; y < 6; y++) {
-                fprintf(arq, "%s", matriz[x][y].elem);
-                fprintf(arq,";");
-            }
-            if (x != item-1) fprintf(arq,"\n");
+    for(int x = 0; x < item; x++) {
+        for(int y = 0; y < 6; y++) {
+            fprintf(arq, "%s", matriz[x][y].elem);
+            fprintf(arq,";");
         }
+        if (x != item-1) fprintf(arq,"\n");
     }
 	fprintf(arq,"\n\nPREFEITURA DO MUNICIPIO DE MARINGA\nListagem de Veículos Gerado em: 02/06/2023 13:40 com 2190 registros."); fclose(arq);
 }
@@ -409,16 +394,13 @@ void modificarVeiculo(int o, int l) { // o = opção  l = linha
     printf("|  %-9s|  %-19s|  %-11s|  %-12s|  %-51s\n", matriz[l][1].elem, matriz[l][2].elem, matriz[l][3].elem, matriz[l][4].elem, matriz[l][5].elem);
 
     if (o == 1) {
-        c = 0;
-        strcpy(campo, "NOME/DESCRIÇÃO");
+        c = 0; strcpy(campo, "NOME/DESCRIÇÃO");
     }
     else if (o == 2) {
-        c = 1;
-        strcpy(campo, "PLACA");
+        c = 1; strcpy(campo, "PLACA");
     }
     else {
-        c = 5;
-        strcpy(campo, "SETOR");
+        c = 5; strcpy(campo, "SETOR");
     }
 
     printf("\n\t\tTem certeza que deseja substituir %s?\n\n\t\t\"%s\"\n\n\t\tDigite 1 em caso afirmativo ou 0 para cancelar: ", campo, matriz[l][c].elem);
@@ -438,48 +420,67 @@ void modificarVeiculo(int o, int l) { // o = opção  l = linha
                 tam = strlen(matriz[l][c].elem);
                 matriz[l][c].elem[tam] = '\0';
             }
-    } while (ondeTem != -1);          // prevenção de erro de digitação/redundância não deixando que
+    } while (ondeTem != -1);  
 
     menuModificar();
 }
 
+char bigString[341], aux[60];
+
+void preencheComEspacos(int a, int b, int num_spaces) {
+
+    strcat(bigString, matriz[a][b].elem);
+
+    int dest_len = strlen(bigString);
+
+    for (int i = 0; i < num_spaces; i++) {
+        bigString[dest_len + i] = ' '; //Preenche os espaços faltantes com espaços para uma boa formatação
+    }
+    bigString[dest_len + num_spaces] = '\0';  // Adiciona o caractere nulo no final
+}
+
 void imprimeTabela() {
 
-    int tam, carac, verTudo;
-
-    if (item < 0) {
-        printf("\n\t\tAinda não há nenhum veículo registrado!\n");
-        getchar();
-        return;
-    }
+    int verTudo;
+    unsigned int carac, diferenca; //unsigned economiza ao não armazenar o sinal de um número
 
     system("cls");
     printf("\n       |  %-55s|  %-9s|  %-19s|  %-11s|  %-12s|  %-51s\n", "NOME/DESCRIÇÃO", "PLACA", "CHASSI", "RENAVAM", "AQUISIÇÃO", "SETOR");
     printf("       |  %-55s|  %-9s|  %-19s|  %-11s|  %-12s|  %-51s\n", "", "", "", "", "", "");
-
-    for (int i = 0; i < item; i++) {
-        printf("%6d ", i);  // imprime o número da linha
-        for (int j = 0; j < 6; j++) {
-            switch (j) {
+    for(int x = 0; x < item; x++) {
+        strcpy(bigString, "");
+        strcpy(aux, "");
+        for(int y = 0; y <5; y++) {
+            switch (y) {
                 case 0: carac = 55; break;
-                case 1: carac = 9; break;
-                case 2: carac = 19; break;
-                case 3: carac = 11; break;
-                case 4: carac = 12; break;
-                case 5: carac = 55; break;
+                case 1: carac = 7; break;
+                case 2: carac = 17; break; // nas linhas abaixo é feito o processo inverso do que foi feito na função leDoArquivo, ou seja, ao invés de separar em colunas
+                case 3: carac = 9; break; // concatena as colunas em uma única linha para que sejam reduzidos os printf's necessários para imprimir a tabela inteira
+                case 4: carac = 10; break;
             }
-            printf("|  ");
-            tam = strlen(matriz[i][j].elem);
-            for (int z = 0; z < tam && z < carac; z++) { // imprime o conteúdo de algum elemento da matriz limitando a 'carac' caracteres
-                printf("%c", matriz[i][j].elem[z]);
+            if (strlen(matriz[x][y].elem) < carac) { // se o tamanho do elemento da matriz for menor que o tamanho da formatação é preciso completar com espaços
+                diferenca = carac - strlen(matriz[x][y].elem);
+                preencheComEspacos(x, y, diferenca);
             }
-            if (tam < carac && j != 5) {
-                for (int s = 1; s <= (carac - tam); s++) { // se o campo em questão não tiver 'carac' caracteres completa 
-                    printf(" ");                                       // com espaços a fim de manter uma boa formatação
-                }
+            else if (strlen(matriz[x][y].elem) > carac) { // se o tamanho do elemento da matriz for maior que o tamanho da formatação é preciso 'cortar-lo'
+                strncpy(aux, matriz[x][y].elem, carac); aux[carac] = '\0';
+                strcat(bigString, aux);
             }
+            else {
+                strcat(bigString, matriz[x][y].elem); // se o tamanho está certinho, apenas concatena para a string grande
+            }
+            if (y == 0) { strcat(bigString, "|  "); } else { strcat(bigString, "  |  "); }
+
+            bigString[strlen(bigString)] = '\0';
         }
-        printf("\n");
+        if (strlen(matriz[x][5].elem) > 59) { // se o setor for maior que 59 (com 2190 linhas apenas uma passava disso) é preciso cortá-la
+            strncpy(aux, matriz[x][5].elem, 59); aux[59] = '\0';
+            strcat(bigString, aux);
+        }
+        else {
+            strcat(bigString, matriz[x][5].elem); // senão apenas concatena
+        }
+        printf("%6d |  %s\n", x, bigString);
     }
     do {
         printf("\n\t\tDeseja ver o nome completo de algum veículo? se sim digite a linha do veículo, se não digite -1: ");
@@ -497,8 +498,7 @@ void pesquisa(char* termo, char* termo2, char* termo3, int col) { // quase igual
     printf("       |  %-55s|  %-9s|  %-19s|  %-11s|  %-12s|  %-51s\n", "", "", "", "", "", "");
 
     for (int i = 0; i < item; i++) {
-        if ( strstr(matriz[i][col].elem, termo) || strstr(matriz[i][col].elem, termo2) || strstr(matriz[i][col].elem, termo3) ) { 
-            // somente se achar o nome/placa pesquisado(a) imprime a linha da matriz
+        if ( strstr(matriz[i][col].elem, termo) || strstr(matriz[i][col].elem, termo2) || strstr(matriz[i][col].elem, termo3) ) { // só se achar o termo pesquisado(a) imprime a linha da matriz
             printf("%6d ", i);  // imprime o número da linha
             for (int j = 0; j < 6; j++) {
                 switch (j) {
@@ -704,16 +704,16 @@ void mensagemOrdenamento() {
 
     system("cls");
     if (antiguidade && inverso) {
-        printf("\n\n\n\t\tTabela ordenada do veículo mais antigo para o mais novo!\n");
+        printf("\n\n\n\t\tTabela ordenada do veículo mais antigo para o mais novo!");
     }
     else if (antiguidade && !inverso) {
-        printf("\n\n\n\t\tTabela ordenada do veículo mais novo para o mais antigo!\n");
+        printf("\n\n\n\t\tTabela ordenada do veículo mais novo para o mais antigo!");
     }
     else if (inverso && !antiguidade) {
-        printf("\n\n\n\t\tTabela em ordem alfabética de Z - A!\n");
+        printf("\n\n\n\t\tTabela em ordem alfabética de Z - A!");
     }
     else {
-        printf("\n\n\n\t\tTabela em ordem alfabética de A - Z!\n");
+        printf("\n\n\n\t\tTabela em ordem alfabética de A - Z!");
     }
     sleep(2);
 }
@@ -721,7 +721,7 @@ void mensagemOrdenamento() {
 void ordenaPorIdade() {
     
     struct tm aquisicao;
-    int dia, mes, ano;
+    unsigned int dia, mes, ano;
     char *ponteiro, cDia[3], cMes[3], cAno[5], strAux[12];
 
     time(&agora);
